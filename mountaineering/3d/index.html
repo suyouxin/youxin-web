@@ -44,21 +44,24 @@ body{display:flex;flex-direction:column}
   Cesium.Ion.defaultAccessToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6Ii12YU9ZeGZyY0JyN1JULUsiLCJqdGkiOiI3ZWVhZWRmMC01YWUwLTQxMzYtODQ0MS0yYTdkNWZmZjUzYTYiLCJpZCI6NTU3MTg1LCJzdWIiOiJ5b3V4aW4iLCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoieW91eGluLXdlYiIsImlhdCI6MTc5NTY2NTgyOX0.DkeDNvziQH1oDPmZ0Ll82okCdpx-WwIzotXNCxmjVA0";
 
   // ArcGIS API key for Esri World Imagery: this site's own key, limited to basemaps and to this site's URLs.
-  // While empty, the map uses Cesium ion aerial imagery instead.
+  // With it, imagery and terrain both come from Esri; while empty, both come from Cesium ion instead.
   var ARCGIS_KEY="AAPTaYqSBwpFxp5zTs79gp8Pkrw..hqPyHKphyIzm4JKjpE4tM5-DFD3lfsyiRsc5AdoJcB38hJHXLDJmeBSGfsExRdkDkbvrtkvBC6TsOe0ufRtn3YFl_FrHIHq3xS0tWaRJdrb__8K_mHa-8PZce1o3RZPv30fwHbT_fMPC9QY2J5iXex-6ucf5Ip1HHfD7e2GpJ1t8-zUt9XPyFAPE98UDqZb6yaELEOv5UrlP8tyBvBDlFN-5C3xqJGLQVNRtbXRnWmpAF4NPtgQyxPt8Dfw6AT1_jt3NVD5g";
-  var imagery;
+  var imagery,terrain;
   if(ARCGIS_KEY){
     Cesium.ArcGisMapService.defaultAccessToken=ARCGIS_KEY;
     imagery=Cesium.ArcGisMapServerImageryProvider.fromBasemapType(Cesium.ArcGisBaseMapType.SATELLITE);
+    terrain=new Cesium.Terrain(Cesium.ArcGISTiledElevationTerrainProvider.fromUrl(
+      "https://elevation3d.arcgis.com/arcgis/rest/services/WorldElevation3D/Terrain3D/ImageServer",{token:ARCGIS_KEY}));
   }else{
     imagery=Cesium.createWorldImageryAsync({style:Cesium.IonWorldImageryStyle.AERIAL});
+    terrain=Cesium.Terrain.fromWorldTerrain();
   }
 
   var viewer;
   try{
     viewer=new Cesium.Viewer("map",{
       baseLayer:Cesium.ImageryLayer.fromProviderAsync(imagery),
-      terrain:Cesium.Terrain.fromWorldTerrain(),
+      terrain:terrain,
       baseLayerPicker:false,geocoder:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,
       fullscreenButton:false,infoBox:false,selectionIndicator:false,timeline:false,animation:false
     });
