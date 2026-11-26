@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>3D Track Map</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cesium@1.124.0/Build/Cesium/Widgets/widgets.css">
+<style>
+:root{--bar:#12181d;--fg:#e6ecf0;--muted:#9aa8b4;--rule:#2c3740;--body:system-ui,-apple-system,"Segoe UI",sans-serif}
+html,body{height:100%;margin:0;background:var(--bar);color:var(--fg);font-family:var(--body);font-size:14px}
+body{display:flex;flex-direction:column}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;
+  padding:calc(8px + env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) 8px max(12px,env(safe-area-inset-left,0px));
+  border-bottom:1px solid var(--rule)}
+.bar a{color:var(--muted);font-size:13px}
+.bar h1{font-size:15px;font-weight:600;margin:0;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#map{flex:1 1 auto;min-height:0;position:relative}
+#msg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:24px;text-align:center;color:var(--muted);z-index:2;pointer-events:none}
+#msg[hidden]{display:none}
+.cesium-viewer-bottom{padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+</head>
+<body>
+<div class="bar">
+  <a id="back" href="../">Back to trip</a>
+  <h1 id="title">3D track map</h1>
+</div>
+<div id="map"><div id="msg">Loading 3D map…</div></div>
+<script src="https://cdn.jsdelivr.net/npm/cesium@1.124.0/Build/Cesium/Cesium.js"></script>
+<script>
+(function(){
+  var msg=document.getElementById("msg");
+  function fail(t){msg.textContent=t;msg.hidden=false;}
+  // ?trip=<area>/<route>/<date> names a trip folder under /mountaineering/; nothing else is loaded.
+  var trip=new URLSearchParams(location.search).get("trip")||"";
+  var m=/^([a-z0-9-]+)\/([a-z0-9-]+)\/(\d{4}-\d{2}-\d{2})$/.exec(trip);
+  if(!m){fail("No trip selected. Open a trip page and use its 3D map button.");return;}
+  var base="../"+trip+"/",gpxUrl=base+m[2]+"-"+m[3]+".gpx";
+  document.getElementById("back").href=base;
+  if(!window.Cesium){fail("The 3D map library could not be loaded.");return;}
+
+  // Cesium ion token: public by design, limited to assets:read and to this site's URLs in the ion dashboard.
+  Cesium.Ion.defaultAccessToken="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJub25jZSI6Ii12YU9ZeGZyY0JyN1JULUsiLCJqdGkiOiI3ZWVhZWRmMC01YWUwLTQxMzYtODQ0MS0yYTdkNWZmZjUzYTYiLCJpZCI6NTU3MTg1LCJzdWIiOiJ5b3V4aW4iLCJpc3MiOiJodHRwczovL2FwaS5jZXNpdW0uY29tIiwiYXVkIjoieW91eGluLXdlYiIsImlhdCI6MTc5NTY2NTgyOX0.DkeDNvziQH1oDPmZ0Ll82okCdpx-WwIzotXNCxmjVA0";
+
+  var viewer;
+  try{
+    viewer=new Cesium.Viewer("map",{
+      baseLayer:Cesium.ImageryLayer.fromProviderAsync(Cesium.createWorldImageryAsync({style:Cesium.IonWorldImageryStyle.AERIAL})),
+      terrain:Cesium.Terrain.fromWorldTerrain(),
+      baseLayerPicker:false,geocoder:false,homeButton:false,sceneModePicker:false,navigationHelpButton:false,
+      fullscreenButton:false,infoBox:false,selectionIndicator:false,timeline:false,animation:false
+    });
+  }catch(e){fail("This browser could not start the 3D map (WebGL is needed).");return;}
+  viewer.scene.globe.depthTestAgainstTerrain=true;
+  viewer.scene.screenSpaceCameraController.enableCollisionDetection=true;
+
+
+  fetch(gpxUrl).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(text){
+    var doc=new DOMParser().parseFromString(text,"application/xml"),pts=doc.getElementsByTagName("trkpt");
+    if(!pts.length)throw new Error("empty");
+    var name=doc.getElementsByTagName("name")[0];
+    if(name&&name.textContent){document.getElementById("title").textContent=name.textContent;document.title=name.textContent+" in 3D";}
+    var step=Math.max(1,Math.floor(pts.length/3000)),flat=[],flat3=[],hi=0,hiE=-1e9,P=[];
+    for(var i=0;i<pts.length;i++){
+      var e=pts[i].getElementsByTagName("ele")[0],el=e?parseFloat(e.textContent):0;
+      P.push([parseFloat(pts[i].getAttribute("lon")),parseFloat(pts[i].getAttribute("lat")),el]);
+      if(el>hiE){hiE=el;hi=i;}
+      if(i%step===0||i===pts.length-1){flat.push(P[i][0],P[i][1]);flat3.push(P[i][0],P[i][1],el);}
+    }
+    viewer.entities.add({polyline:{positions:Cesium.Cartesian3.fromDegreesArray(flat),clampToGround:true,width:5,
+      material:new Cesium.PolylineOutlineMaterialProperty({color:Cesium.Color.fromCssColorString("#ff6a1f"),outlineWidth:2,outlineColor:Cesium.Color.WHITE})}});
+    function mark(p,label,css){
+      viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(p[0],p[1]),
+        point:{pixelSize:11,color:Cesium.Color.fromCssColorString(css),outlineColor:Cesium.Color.WHITE,outlineWidth:2,
+          heightReference:Cesium.HeightReference.CLAMP_TO_GROUND,disableDepthTestDistance:Number.POSITIVE_INFINITY},
+        label:{text:label,font:"600 14px system-ui, sans-serif",fillColor:Cesium.Color.WHITE,outlineColor:Cesium.Color.BLACK,outlineWidth:3,
+          style:Cesium.LabelStyle.FILL_AND_OUTLINE,verticalOrigin:Cesium.VerticalOrigin.BOTTOM,pixelOffset:new Cesium.Cartesian2(0,-12),
+          heightReference:Cesium.HeightReference.CLAMP_TO_GROUND,disableDepthTestDistance:Number.POSITIVE_INFINITY}});
+    }
+    var s=P[0],f=P[P.length-1],loop=Math.hypot((s[0]-f[0])*Math.cos(s[1]*Math.PI/180),s[1]-f[1])*111195<150;
+    mark(s,loop?"Start and finish":"Start","#111a22");if(!loop)mark(f,"Finish","#111a22");
+    mark(P[hi],"High point "+Math.round(hiE)+" m","#c2410c");
+    msg.hidden=true;
+    var sph=Cesium.BoundingSphere.fromPoints(Cesium.Cartesian3.fromDegreesArrayHeights(flat3));
+    viewer.camera.flyToBoundingSphere(sph,{duration:0,offset:new Cesium.HeadingPitchRange(Cesium.Math.toRadians(20),Cesium.Math.toRadians(-32),sph.radius*2.8)});
+  }).catch(function(){fail("The track for this trip could not be loaded.");});
+})();
+</script>
+</body>
+</html>
