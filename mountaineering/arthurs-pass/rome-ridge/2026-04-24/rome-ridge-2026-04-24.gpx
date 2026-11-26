@@ -10,6 +10,41 @@
     </link>
     <time>2026-04-23T19:50:14.000Z</time>
   </metadata>
+  <wpt lat="-42.927945" lon="171.558195">
+    <name>Start, Coral Track</name>
+    <desc>805 m · 07:50</desc>
+    <type>end</type>
+  </wpt>
+  <wpt lat="-42.920803" lon="171.533648">
+    <name>Rome Ridge</name>
+    <desc>1640 m · 09:45</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-42.919404" lon="171.526664">
+    <name>High point</name>
+    <desc>1843 m · 11:05–11:20</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-42.932063" lon="171.528610">
+    <name>Low point of ridge</name>
+    <desc>1627 m · 13:30</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-42.943133" lon="171.536079">
+    <name>Avalanche Peak</name>
+    <desc>1833 m · 14:51</desc>
+    <type>summit</type>
+  </wpt>
+  <wpt lat="-42.945153" lon="171.546121">
+    <name>Stop</name>
+    <desc>1550 m · 15:32</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-42.939273" lon="171.561581">
+    <name>Finish, Arthur's Pass</name>
+    <desc>755 m · 17:27</desc>
+    <type>end</type>
+  </wpt>
   <trk>
     <name>Rome Ridge to Avalanche Peak</name>
     <type>hiking</type>

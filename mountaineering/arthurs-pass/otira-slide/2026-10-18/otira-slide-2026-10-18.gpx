@@ -10,6 +10,36 @@
     </link>
     <time>2026-10-17T16:29:42.000Z</time>
   </metadata>
+  <wpt lat="-42.898619" lon="171.558701">
+    <name>Otira Valley car park</name>
+    <desc>896 m · 05:29 and 14:05</desc>
+    <type>end</type>
+  </wpt>
+  <wpt lat="-42.896069" lon="171.538569">
+    <name>Footbridge</name>
+    <desc>1050 m · 06:07</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-42.904463" lon="171.519567">
+    <name>Base of Otira Slide</name>
+    <desc>1460 m · 07:11</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-42.912401" lon="171.519386">
+    <name>Start of steep finish</name>
+    <desc>1985 m · 09:07</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-42.914411" lon="171.517485">
+    <name>Low Peak</name>
+    <desc>2212 m · 10:00</desc>
+    <type>summit</type>
+  </wpt>
+  <wpt lat="-42.911333" lon="171.512251">
+    <name>High Peak</name>
+    <desc>2275 m · not visited</desc>
+    <type>bypassed</type>
+  </wpt>
   <trk>
     <name>Mt Rolleston Low Peak via the Otira Slide</name>
     <type>mountaineering</type>

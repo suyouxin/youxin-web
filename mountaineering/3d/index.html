@@ -73,7 +73,7 @@ body{display:flex;flex-direction:column}
   fetch(gpxUrl).then(function(r){if(!r.ok)throw new Error(r.status);return r.text();}).then(function(text){
     var doc=new DOMParser().parseFromString(text,"application/xml"),pts=doc.getElementsByTagName("trkpt");
     if(!pts.length)throw new Error("empty");
-    var name=doc.getElementsByTagName("name")[0];
+    var trk=doc.getElementsByTagName("trk")[0],name=trk&&trk.getElementsByTagName("name")[0];
     if(name&&name.textContent){document.getElementById("title").textContent=name.textContent;document.title=name.textContent+" in 3D";}
     var step=Math.max(1,Math.floor(pts.length/3000)),flat=[],flat3=[],hi=0,hiE=-1e9,P=[];
     for(var i=0;i<pts.length;i++){
@@ -84,17 +84,36 @@ body{display:flex;flex-direction:column}
     }
     viewer.entities.add({polyline:{positions:Cesium.Cartesian3.fromDegreesArray(flat),clampToGround:true,width:5,
       material:new Cesium.PolylineOutlineMaterialProperty({color:Cesium.Color.fromCssColorString("#ff6a1f"),outlineWidth:2,outlineColor:Cesium.Color.WHITE})}});
-    function mark(p,label,css){
-      viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(p[0],p[1]),
+    var marks=[];
+    function mark(p,label,css){marks.push([p,label,css]);}
+    function place(p,label,css,height){
+      var ref=height==null?Cesium.HeightReference.CLAMP_TO_GROUND:Cesium.HeightReference.NONE;
+      viewer.entities.add({position:Cesium.Cartesian3.fromDegrees(p[0],p[1],height||0),
         point:{pixelSize:11,color:Cesium.Color.fromCssColorString(css),outlineColor:Cesium.Color.WHITE,outlineWidth:2,
-          heightReference:Cesium.HeightReference.CLAMP_TO_GROUND,disableDepthTestDistance:Number.POSITIVE_INFINITY},
-        label:{text:label,font:"600 14px system-ui, sans-serif",fillColor:Cesium.Color.WHITE,outlineColor:Cesium.Color.BLACK,outlineWidth:3,
+          heightReference:ref,disableDepthTestDistance:Number.POSITIVE_INFINITY},
+        label:{text:label,font:"600 13px system-ui, sans-serif",fillColor:Cesium.Color.WHITE,outlineColor:Cesium.Color.BLACK,outlineWidth:3,
           style:Cesium.LabelStyle.FILL_AND_OUTLINE,verticalOrigin:Cesium.VerticalOrigin.BOTTOM,pixelOffset:new Cesium.Cartesian2(0,-12),
-          heightReference:Cesium.HeightReference.CLAMP_TO_GROUND,disableDepthTestDistance:Number.POSITIVE_INFINITY}});
+          heightReference:ref,disableDepthTestDistance:Number.POSITIVE_INFINITY}});
+    }
+    // Read each landmark's ground height from the terrain once it is ready; if that fails, let Cesium clamp them.
+    function placeAll(tp){
+      var c=marks.map(function(m){return Cesium.Cartographic.fromDegrees(m[0][0],m[0][1]);});
+      Cesium.sampleTerrainMostDetailed(tp,c).then(function(r){marks.forEach(function(m,i){place(m[0],m[1],m[2],r[i].height);});})
+        .catch(function(){marks.forEach(function(m){place(m[0],m[1],m[2],null);});});
     }
     var s=P[0],f=P[P.length-1],loop=Math.hypot((s[0]-f[0])*Math.cos(s[1]*Math.PI/180),s[1]-f[1])*111195<150;
-    mark(s,loop?"Start and finish":"Start","#111a22");if(!loop)mark(f,"Finish","#111a22");
-    mark(P[hi],"High point "+Math.round(hiE)+" m","#c2410c");
+    // Landmarks come from the GPX waypoints (name, a height-and-time line, and a type); without any, mark start, finish and high point.
+    var wp=doc.getElementsByTagName("wpt"),CSS={summit:"#c2410c",bypassed:"#7c8894",waypoint:"#1d4ed8",end:"#111a22"};
+    function txt(el,tag){var c=el.getElementsByTagName(tag)[0];return c?c.textContent:"";}
+    for(var k=0;k<wp.length;k++){
+      var d=txt(wp[k],"desc");
+      mark([parseFloat(wp[k].getAttribute("lon")),parseFloat(wp[k].getAttribute("lat"))],txt(wp[k],"name")+(d?"\n"+d:""),CSS[txt(wp[k],"type")]||CSS.waypoint);
+    }
+    if(!wp.length){
+      mark(s,loop?"Start and finish":"Start","#111a22");if(!loop)mark(f,"Finish","#111a22");
+      mark(P[hi],"High point "+Math.round(hiE)+" m","#c2410c");
+    }
+    if(terrain.ready)placeAll(terrain.provider);else{terrain.readyEvent.addEventListener(placeAll);terrain.errorEvent.addEventListener(function(){marks.forEach(function(m){place(m[0],m[1],m[2],null);});});}
     msg.hidden=true;
     var sph=Cesium.BoundingSphere.fromPoints(Cesium.Cartesian3.fromDegreesArrayHeights(flat3));
     // Look from the start/finish side towards the high point, so the camera sits over the valley and the climb faces it.

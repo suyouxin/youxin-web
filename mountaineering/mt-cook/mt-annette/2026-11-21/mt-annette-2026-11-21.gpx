@@ -10,6 +10,66 @@
     </link>
     <time>2026-11-20T16:46:28.000Z</time>
   </metadata>
+  <wpt lat="-43.753240" lon="170.099362">
+    <name>Sebastopol</name>
+    <desc>1468 m · 07:30</desc>
+    <type>summit</type>
+  </wpt>
+  <wpt lat="-43.751601" lon="170.061822">
+    <name>Mt Annette</name>
+    <desc>2235 m · 12:17</desc>
+    <type>summit</type>
+  </wpt>
+  <wpt lat="-43.736646" lon="170.060892">
+    <name>Waihī Pass</name>
+    <desc>1931 m · 13:47</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-43.733631" lon="170.063546">
+    <name>Kitchener</name>
+    <desc>2042 m · bypassed</desc>
+    <type>bypassed</type>
+  </wpt>
+  <wpt lat="-43.725509" lon="170.064443">
+    <name>Mt Ollivier</name>
+    <desc>1933 m · 15:30</desc>
+    <type>summit</type>
+  </wpt>
+  <wpt lat="-43.723784" lon="170.064692">
+    <name>Pt 1919</name>
+    <desc>16:01</desc>
+    <type>summit</type>
+  </wpt>
+  <wpt lat="-43.721021" lon="170.064651">
+    <name>Mueller Hut</name>
+    <desc>1817 m · 16:13</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-43.714347" lon="170.075608">
+    <name>Sealy Tarns</name>
+    <desc>1250 m · 17:25</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-43.753046" lon="170.061199">
+    <name>Plateau edge</name>
+    <desc>2205 m · 11:46</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-43.749429" lon="170.069137">
+    <name>Top of ridge</name>
+    <desc>1965 m · 10:15</desc>
+    <type>waypoint</type>
+  </wpt>
+  <wpt lat="-43.736695" lon="170.096707">
+    <name>Start</name>
+    <desc>737 m · 05:46</desc>
+    <type>end</type>
+  </wpt>
+  <wpt lat="-43.731573" lon="170.093798">
+    <name>Finish</name>
+    <desc>758 m · 18:19</desc>
+    <type>end</type>
+  </wpt>
   <trk>
     <name>Mt Annette via Sebastopol Ridge</name>
     <type>hiking</type>
