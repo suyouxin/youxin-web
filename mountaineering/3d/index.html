@@ -94,7 +94,10 @@ body{display:flex;flex-direction:column}
     mark(P[hi],"High point "+Math.round(hiE)+" m","#c2410c");
     msg.hidden=true;
     var sph=Cesium.BoundingSphere.fromPoints(Cesium.Cartesian3.fromDegreesArrayHeights(flat3));
-    viewer.camera.flyToBoundingSphere(sph,{duration:0,offset:new Cesium.HeadingPitchRange(Cesium.Math.toRadians(20),Cesium.Math.toRadians(-32),sph.radius*2.8)});
+    // Look from the start/finish side towards the high point, so the camera sits over the valley and the climb faces it.
+    var mx=(s[0]+f[0])/2,my=(s[1]+f[1])/2,h=P[hi],
+      head=Math.atan2((h[0]-mx)*Math.cos(my*Math.PI/180),h[1]-my);
+    viewer.camera.flyToBoundingSphere(sph,{duration:0,offset:new Cesium.HeadingPitchRange(head,Cesium.Math.toRadians(-38),sph.radius*3.4)});
   }).catch(function(){fail("The track for this trip could not be loaded.");});
 })();
 </script>
